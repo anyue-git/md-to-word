@@ -87,6 +87,33 @@ h2 {
   white-space: nowrap;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quiet-action {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: #344353;
+  padding: 0 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.quiet-action:hover {
+  border-color: #9aa9b7;
+  background: var(--surface-strong);
+}
+
+.quiet-action:disabled {
+  opacity: 0.62;
+  cursor: wait;
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
@@ -341,5 +368,9 @@ textarea:focus {
 
   .status-pill {
     align-self: flex-start;
+  }
+
+  .topbar-actions {
+    align-items: flex-start;
   }
 }

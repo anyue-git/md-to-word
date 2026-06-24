@@ -1,5 +1,20 @@
 # Markdown 转 Word 操作步骤
 
+## 支持平台
+
+核心转换工具支持 macOS、Windows 和 Linux。使用前需要安装：
+
+- Node.js
+- Pandoc
+
+macOS 用户可以双击 `打开可视化界面.command` 启动可视化界面；这个双击启动文件只适用于 macOS。
+
+Windows 和 Linux 用户请使用命令行启动：
+
+```bash
+npm run app
+```
+
 ## 第一次使用
 
 ```bash
@@ -41,6 +56,8 @@ node dist/cli.js ~/Documents/input.md -o ~/Documents/output.docx --reference-doc
 它会自动启动本地服务并打开浏览器。关闭可视化页面后，后台服务会自动停止。
 
 如果页面已经开着，再次双击会直接打开已有界面。
+
+界面右上角有“退出应用”按钮，点击后会停止后台服务。直接关闭浏览器页面也会自动停止服务；如果终端窗口提示是否终止进程，选择“终止”即可。
 
 也可以用命令启动：
 

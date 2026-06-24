@@ -12,6 +12,7 @@ const resultPanel = document.querySelector("#resultPanel");
 const resultTitle = document.querySelector("#resultTitle");
 const resultText = document.querySelector("#resultText");
 const downloadLink = document.querySelector("#downloadLink");
+const quitButton = document.querySelector("#quitButton");
 
 let currentMode = "path";
 let selectedMarkdown = "";
@@ -72,6 +73,23 @@ form.addEventListener("submit", async (event) => {
     submitButton.disabled = false;
     submitButton.textContent = "开始转换";
   }
+});
+
+quitButton.addEventListener("click", async () => {
+  quitButton.disabled = true;
+  quitButton.textContent = "正在退出...";
+  showResult("应用正在退出", "后台服务即将停止，可以关闭这个浏览器页面。", "success");
+
+  window.clearInterval(heartbeatTimer);
+  try {
+    await fetch("/api/session/shutdown", { method: "POST" });
+  } catch {
+    // The server may close before the browser receives a response.
+  }
+
+  window.setTimeout(() => {
+    window.close();
+  }, 500);
 });
 
 function buildPayload() {
@@ -139,6 +157,7 @@ function startSessionHeartbeat() {
 }
 
 window.addEventListener("pagehide", () => {
+  if (quitButton.disabled) return;
   window.clearInterval(heartbeatTimer);
   navigator.sendBeacon("/api/session/end", new Blob(["{}"], { type: "application/json" }));
 });

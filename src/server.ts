@@ -16,6 +16,7 @@ const autoOpen = process.env.APP_AUTO_OPEN === "1";
 const startedAt = Date.now();
 let lastHeartbeatAt: number | undefined;
 let shutdownTimer: NodeJS.Timeout | undefined;
+let shutdownRequested = false;
 
 interface ConvertRequest {
   mode?: "path" | "content";
@@ -54,6 +55,12 @@ const server = createServer(async (request, response) => {
 
     if (request.method === "POST" && request.url === "/api/session/end") {
       scheduleShutdown("browser window closed", 2_500);
+      sendJson(response, 200, { ok: true });
+      return;
+    }
+
+    if (request.method === "POST" && request.url === "/api/session/shutdown") {
+      scheduleShutdown("user requested quit", 250, true);
       sendJson(response, 200, { ok: true });
       return;
     }
@@ -99,12 +106,12 @@ setInterval(() => {
 
   const now = Date.now();
   if (!lastHeartbeatAt && now - startedAt > 120_000) {
-    scheduleShutdown("no browser session connected", 0);
+    scheduleShutdown("no browser session connected", 0, true);
     return;
   }
 
   if (lastHeartbeatAt && now - lastHeartbeatAt > 18_000) {
-    scheduleShutdown("browser page inactive", 0);
+    scheduleShutdown("browser page inactive", 0, true);
   }
 }, 5_000).unref();
 
@@ -266,14 +273,15 @@ function encodeHeaderFilename(filename: string): string {
 
 function markBrowserActive(): void {
   lastHeartbeatAt = Date.now();
-  if (shutdownTimer) {
+  if (shutdownTimer && !shutdownRequested) {
     clearTimeout(shutdownTimer);
     shutdownTimer = undefined;
   }
 }
 
-function scheduleShutdown(reason: string, delayMs: number): void {
+function scheduleShutdown(reason: string, delayMs: number, final = false): void {
   if (shutdownTimer) return;
+  shutdownRequested = final;
 
   shutdownTimer = setTimeout(() => {
     console.log(`Stopping Markdown to Word app: ${reason}.`);
