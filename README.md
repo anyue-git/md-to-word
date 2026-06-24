@@ -47,9 +47,9 @@ npm run generate:reference
 
 它会自动安装缺失依赖、启动本地服务并打开浏览器。
 
-### 命令行启动
+### 所有系统都可以使用：
 
-所有系统都可以使用：
+命令行启动
 
 ```bash
 npm run app
