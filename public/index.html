@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Markdown 转 Word</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <h1>Markdown 转 Word</h1>
+            <p>选择输入方式，设置 Word 输出选项，然后生成 .docx。</p>
+          </div>
+          <div class="status-pill" id="pandocStatus">本地转换</div>
+        </header>
+
+        <form id="convertForm" class="layout">
+          <section class="panel primary-panel">
+            <div class="section-heading">
+              <h2>输入</h2>
+              <div class="segmented" role="tablist" aria-label="输入方式">
+                <button type="button" class="segment active" data-mode="path">文件路径</button>
+                <button type="button" class="segment" data-mode="content">选择文件</button>
+              </div>
+            </div>
+
+            <div class="mode-block" data-mode-panel="path">
+              <label class="field">
+                <span>Markdown 文件路径</span>
+                <input
+                  id="inputPath"
+                  type="text"
+                  placeholder="/path/to/input.md"
+                  autocomplete="off"
+                />
+              </label>
+              <p class="hint">这种方式最适合带本地图片的 Markdown，相对路径会更容易被 Pandoc 找到。</p>
+            </div>
+
+            <div class="mode-block hidden" data-mode-panel="content">
+              <label class="dropzone" for="markdownFile" id="dropzone">
+                <input id="markdownFile" type="file" accept=".md,.markdown,text/markdown,text/plain" />
+                <span class="drop-title">选择 Markdown 文件</span>
+                <span class="drop-subtitle" id="selectedFileName">纯文本 Markdown 最适合这种方式</span>
+              </label>
+            </div>
+
+            <div class="grid two">
+              <label class="field">
+                <span>输出 DOCX 路径</span>
+                <input
+                  id="outputPath"
+                  type="text"
+                  placeholder="留空则自动保存到 outputs/"
+                  autocomplete="off"
+                />
+              </label>
+              <label class="field">
+                <span>Word 样式模板</span>
+                <input
+                  id="referenceDocPath"
+                  type="text"
+                  value="assets/reference.docx"
+                  autocomplete="off"
+                />
+              </label>
+            </div>
+
+            <label class="field">
+              <span>资源目录</span>
+              <textarea
+                id="resourcePaths"
+                rows="3"
+                placeholder="每行一个目录，可用于图片等资源查找"
+              ></textarea>
+            </label>
+          </section>
+
+          <aside class="panel options-panel">
+            <h2>选项</h2>
+            <div class="grid two">
+              <label class="field">
+                <span>标题</span>
+                <input id="title" type="text" placeholder="可选" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span>作者</span>
+                <input id="author" type="text" placeholder="可选" autocomplete="off" />
+              </label>
+            </div>
+
+            <label class="field">
+              <span>代码高亮</span>
+              <select id="highlightStyle">
+                <option value="tango">tango</option>
+                <option value="pygments">pygments</option>
+                <option value="kate">kate</option>
+                <option value="espresso">espresso</option>
+                <option value="zenburn">zenburn</option>
+              </select>
+            </label>
+
+            <div class="toggles">
+              <label class="toggle">
+                <input id="toc" type="checkbox" />
+                <span>生成目录</span>
+              </label>
+              <label class="toggle">
+                <input id="numberSections" type="checkbox" />
+                <span>标题编号</span>
+              </label>
+              <label class="toggle">
+                <input id="preserveHtml" type="checkbox" />
+                <span>保留常见 HTML</span>
+              </label>
+              <label class="toggle">
+                <input id="allowRemoteImages" type="checkbox" />
+                <span>允许远程图片</span>
+              </label>
+            </div>
+
+            <button type="submit" class="primary-action" id="submitButton">开始转换</button>
+          </aside>
+        </form>
+
+        <section class="result-panel" id="resultPanel" hidden>
+          <div>
+            <h2 id="resultTitle">转换结果</h2>
+            <p id="resultText"></p>
+          </div>
+          <a class="download-link" id="downloadLink" href="#" hidden>下载 DOCX</a>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "md-to-word",
+  "version": "0.1.0",
+  "description": "Markdown to Word DOCX converter powered by Pandoc.",
+  "type": "module",
+  "bin": {
+    "md2docx": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "app": "npm run build && node dist/server.js",
+    "generate:reference": "mkdir -p assets && pandoc --print-default-data-file reference.docx > assets/reference.docx",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "convert:fixture": "npm run build && node dist/cli.js tests/fixtures/complex.md -o tmp/complex.docx --reference-doc assets/reference.docx --toc --number-sections"
+  },
+  "keywords": [
+    "markdown",
+    "docx",
+    "pandoc"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "typescript": "^6.0.3"
+  }
+}
