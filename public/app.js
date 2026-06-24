@@ -15,6 +15,9 @@ const downloadLink = document.querySelector("#downloadLink");
 
 let currentMode = "path";
 let selectedMarkdown = "";
+let heartbeatTimer;
+
+startSessionHeartbeat();
 
 segments.forEach((segment) => {
   segment.addEventListener("click", () => {
@@ -125,3 +128,17 @@ function resetResult() {
   resultPanel.classList.remove("error");
   downloadLink.hidden = true;
 }
+
+function startSessionHeartbeat() {
+  const sendHeartbeat = () => {
+    fetch("/api/session/heartbeat", { method: "POST", keepalive: true }).catch(() => {});
+  };
+
+  sendHeartbeat();
+  heartbeatTimer = window.setInterval(sendHeartbeat, 5_000);
+}
+
+window.addEventListener("pagehide", () => {
+  window.clearInterval(heartbeatTimer);
+  navigator.sendBeacon("/api/session/end", new Blob(["{}"], { type: "application/json" }));
+});

@@ -32,17 +32,29 @@ node dist/cli.js ~/Documents/input.md -o ~/Documents/output.docx --reference-doc
 
 ## 可视化界面
 
+最方便的方式：双击项目里的这个文件：
+
+```text
+打开可视化界面.command
+```
+
+它会自动启动本地服务并打开浏览器。关闭可视化页面后，后台服务会自动停止。
+
+如果页面已经开着，再次双击会直接打开已有界面。
+
+也可以用命令启动：
+
 运行：
 
 ```bash
 cd md-to-word
-npm run app
+npm run app:open
 ```
 
 然后打开：
 
 ```text
-http://localhost:5177
+http://127.0.0.1:5177
 ```
 
 界面支持两种输入方式：

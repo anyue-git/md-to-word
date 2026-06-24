@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "app": "npm run build && node dist/server.js",
+    "app:open": "npm run build && APP_AUTO_OPEN=1 node dist/server.js",
     "generate:reference": "mkdir -p assets && pandoc --print-default-data-file reference.docx > assets/reference.docx",
     "test": "npm run build && node --test tests/*.test.mjs",
     "convert:fixture": "npm run build && node dist/cli.js tests/fixtures/complex.md -o tmp/complex.docx --reference-doc assets/reference.docx --toc --number-sections"

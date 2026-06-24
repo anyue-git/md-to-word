@@ -1,5 +1,6 @@
+import { execFile } from "node:child_process";
 import { createReadStream } from "node:fs";
-import { mkdir, readFile, stat } from "node:fs/promises";
+import { mkdir, stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,6 +11,11 @@ const publicDir = path.join(rootDir, "public");
 const defaultOutputDir = path.join(rootDir, "outputs");
 const host = "127.0.0.1";
 const port = Number(process.env.PORT ?? 5177);
+const appUrl = `http://${host}:${port}`;
+const autoOpen = process.env.APP_AUTO_OPEN === "1";
+const startedAt = Date.now();
+let lastHeartbeatAt: number | undefined;
+let shutdownTimer: NodeJS.Timeout | undefined;
 
 interface ConvertRequest {
   mode?: "path" | "content";
@@ -40,6 +46,18 @@ const server = createServer(async (request, response) => {
       return;
     }
 
+    if (request.method === "POST" && request.url === "/api/session/heartbeat") {
+      markBrowserActive();
+      sendJson(response, 200, { ok: true });
+      return;
+    }
+
+    if (request.method === "POST" && request.url === "/api/session/end") {
+      scheduleShutdown("browser window closed", 2_500);
+      sendJson(response, 200, { ok: true });
+      return;
+    }
+
     if (request.method === "GET" && request.url?.startsWith("/api/download")) {
       await handleDownload(request, response);
       return;
@@ -58,8 +76,37 @@ const server = createServer(async (request, response) => {
 });
 
 server.listen(port, host, () => {
-  console.log(`Markdown to Word app running at http://${host}:${port}`);
+  console.log(`Markdown to Word app running at ${appUrl}`);
+  if (autoOpen) {
+    openBrowser(appUrl);
+  }
 });
+
+server.on("error", (error: NodeJS.ErrnoException) => {
+  if (error.code === "EADDRINUSE") {
+    console.log(`Markdown to Word app is already running at ${appUrl}`);
+    if (autoOpen) {
+      openBrowser(appUrl);
+      process.exit(0);
+    }
+  }
+
+  throw error;
+});
+
+setInterval(() => {
+  if (!autoOpen) return;
+
+  const now = Date.now();
+  if (!lastHeartbeatAt && now - startedAt > 120_000) {
+    scheduleShutdown("no browser session connected", 0);
+    return;
+  }
+
+  if (lastHeartbeatAt && now - lastHeartbeatAt > 18_000) {
+    scheduleShutdown("browser page inactive", 0);
+  }
+}, 5_000).unref();
 
 async function handleConvert(
   request: IncomingMessage,
@@ -215,4 +262,31 @@ function getContentType(filePath: string): string {
 
 function encodeHeaderFilename(filename: string): string {
   return filename.replace(/["\\]/g, "_");
+}
+
+function markBrowserActive(): void {
+  lastHeartbeatAt = Date.now();
+  if (shutdownTimer) {
+    clearTimeout(shutdownTimer);
+    shutdownTimer = undefined;
+  }
+}
+
+function scheduleShutdown(reason: string, delayMs: number): void {
+  if (shutdownTimer) return;
+
+  shutdownTimer = setTimeout(() => {
+    console.log(`Stopping Markdown to Word app: ${reason}.`);
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 1_000).unref();
+  }, delayMs);
+  shutdownTimer.unref();
+}
+
+function openBrowser(url: string): void {
+  execFile("open", [url], (error) => {
+    if (error) {
+      console.log(`Open this URL in your browser: ${url}`);
+    }
+  });
 }
